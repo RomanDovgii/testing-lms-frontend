@@ -1,0 +1,98 @@
+.radioInput {
+    cursor: pointer;
+}
+
+.radioInputDisabled {
+    opacity: 0.3;
+}
+
+.radioInput:focus {
+    outline: none;
+}
+
+.radioInput input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    border: 0;
+    padding: 0;
+    white-space: nowrap;
+    clip-path: inset(100%);
+    clip: rect(0 0 0 0);
+    overflow: hidden;
+}
+
+.radioInput span {
+    color: rgb(8, 8, 8);
+    font-family: Inter;
+    font-size: 1.5em;
+    font-weight: 700;
+    text-align: left;
+    position: relative;
+    padding-left: 2.5em;
+    display: block;
+    line-height: 2em;
+    min-height: 2em;
+    margin-top: 0.625em;
+}
+
+.radioInput span::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    width: 1.875em;
+    height: 1.875em;
+    border: 3px solid rgb(31, 41, 54);
+    background: rgb(255, 255, 255);
+    transition: opacity 0.5s;
+    border-radius: 50%;
+}
+
+.radioInput input + span::after {
+    content: "";
+    position: absolute;
+    top: 0.9375em;
+    left: 0.9375em;
+    transform: translate(-50%, -50%);
+    box-sizing: border-box;
+    width: 1em;
+    height: 1em;
+    background: rgb(31, 41, 54);
+    opacity: 0;
+    transition: opacity 0.5s;
+    border-radius: 50%;
+}
+
+.radioInput input:checked + span::after {
+    background: rgb(31, 41, 54);
+    opacity: 1;
+}
+
+.radioInput input:hover + span::before {
+    opacity: 0.5;
+}
+
+.radioInput input:focus + span::before {
+    border: 3px solid rgba(21, 91, 176, 0.6);    
+    opacity: 0.5;
+}
+
+.radioInput input:checked:hover + span::after {
+    opacity: 0.5;
+}
+
+.radioInput input:checked:focus + span::after {
+    background: rgba(21, 91, 176, 0.6);
+    opacity: 0.5;
+}
+
+.radioInput input:active + span::before {
+    opacity: 0.5;
+}
+
+.radioInput input:checked:active + span::after {
+    opacity: 0.5;
+}

@@ -1,0 +1,31 @@
+.heading {
+    color: rgb(0, 0, 0);
+    font-family: Inter;
+    font-size: 1.5em;
+    font-weight: 400;
+    text-align: left;
+}
+
+.text {
+    color: rgb(0, 0, 0);
+    font-family: Inter;
+    font-size: 1.25em;
+    font-weight: 400;
+    text-align: left;
+}
+
+.role {
+    color: rgb(0, 0, 0);
+    font-family: Inter;
+    font-size: 1.5em;
+    font-weight: 400;
+    text-align: left;
+    margin-top: 1em;
+}
+
+.userBlock {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}

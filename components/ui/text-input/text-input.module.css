@@ -1,0 +1,105 @@
+.label {
+    margin-top: 1.25em;
+    display: block;
+}
+
+.labelDisabled {
+    margin-top: 1.25em;
+    display: block;
+    opacity: 0.3;
+}
+
+.textInput {
+    border: none;
+    border-radius: 1.25rem;
+    padding: 1em 1.25em;
+    display: block;
+    width: 100%;
+    max-width: 31.25em;
+    height: 3.75em;
+    color: rgb(8, 8, 8, 1);
+    box-shadow: inset 0px 0px 0px 3px rgb(31, 41, 54);
+    background: rgb(242, 242, 242);
+    font-family: Inter;
+    font-size: 1.5em;
+    font-weight: 700;
+    line-height: 1.8em;
+    letter-spacing: 0px;
+    text-align: left;
+    transition: all 0.5s;
+    
+}
+
+.textInputWithDescription {
+    border: none;
+    border-radius: 1.25rem;
+    padding: 1em 1.25em;
+    display: block;
+    width: 100%;
+    max-width: 31.25em;
+    height: 3.75em;
+    color: rgb(8, 8, 8, 1);
+    box-shadow: inset 0px 0px 0px 3px rgb(31, 41, 54);
+    background: rgb(242, 242, 242);
+    font-family: Inter;
+    font-size: 1.5em;
+    font-weight: 700;
+    line-height: 1.8em;
+    letter-spacing: 0px;
+    text-align: left;
+    transition: all 0.5s;
+    margin-top: 0.625em;
+}
+
+.textInput:focus {
+    outline: none;
+}
+
+.textInput::placeholder {
+    color: #080808;
+    opacity: 1;
+}
+
+.textInput:hover {
+    outline: none;
+    box-shadow: inset 0px 0px 0px 3px rgba(21, 91, 176, 0.6);
+}
+
+.textInput:focus {
+    outline: none;
+    box-shadow: inset 0px 0px 0px 3px rgba(21, 91, 176, 0.6);
+}
+
+.textInput:hover::placeholder {
+    opacity: 0.5;
+}
+
+.textInput:active {
+    box-shadow: inset 0px 0px 0px 3px rgba(21, 91, 176, 0.6);
+}
+
+.textInput:active::placeholder {
+    opacity: 1;
+}
+
+.visuallyHidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    border: 0;
+    padding: 0;
+    white-space: nowrap;
+    clip-path: inset(100%);
+    clip: rect(0 0 0 0);
+    overflow: hidden;
+}
+
+.text {
+    color: rgb(0, 0, 0);
+    font-family: Inter;
+    font-size: 1.5em;
+    font-weight: 400;
+    letter-spacing: 0px;
+    text-align: left;
+}

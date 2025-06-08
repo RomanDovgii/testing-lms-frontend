@@ -1,0 +1,33 @@
+.main {    
+    flex-grow: 1;
+    display: flex;
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
+
+.mainWrapper {
+    max-width: 82.5em;
+    width: 100%;
+    margin: 0 auto;
+    display: grid;
+    grid-template-areas: 
+    "form form"
+    "table table";
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 4fr;
+    grid-gap: 0.5em;
+    min-height: 100%;
+}
+
+.formSection {
+    grid-area: form;
+}
+
+.availableTasks {
+    grid-area: table;
+}
+
+.form {
+    display: flex;
+    flex-wrap: wrap;
+}

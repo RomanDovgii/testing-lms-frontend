@@ -1,0 +1,26 @@
+.list {
+    list-style: none;
+}
+
+.item {
+    padding: 5px 10px;
+}
+
+.buttonsWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.page {
+    display: block;
+    color: #212121;
+    font-family: Inter;
+    font-size: 1em;
+    font-weight: 700;
+    line-height: 1.8em;
+    letter-spacing: 0px;
+    text-align: center;
+}

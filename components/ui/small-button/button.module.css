@@ -1,0 +1,35 @@
+.inputButton {
+    max-width: 20em;
+    height: 3em;
+    border-radius: 20px;
+    background: rgb(31, 41, 54);
+    color: #fff8f8;
+    font-family: Inter;
+    font-size: 1em;
+    font-weight: 700;
+    line-height: 1.8em;
+    letter-spacing: 0px;
+    text-align: center;
+    padding: 0.1em 0.2em;
+    transition: all 0.5s;
+    display: block;
+    width: 40%;
+}
+
+.inputButton:disabled {
+    opacity: 0.3;
+}
+
+.inputButton:focus,
+.inputButton:hover {
+    outline: none;
+    box-shadow: inset 0px 0px 0px 3px rgba(31, 41, 54, 0.6);
+    background: rgb(255, 248, 248);
+    color: rgba(31, 41, 54, 1)
+}
+
+.inputButton:active {
+    background: rgba(31, 41, 54, 0.6);
+    color: rgb(255, 248, 248);
+    box-shadow: none;
+}
