@@ -9,13 +9,12 @@ const Footer: React.FC = () => {
     <AntFooter
       style={{
         display: 'block',
-        height: '4.375em',       // 4.375em = 70px примерно
+        height: '4.375em',
         background: 'rgb(31, 41, 54)',
         textAlign: 'center',
         padding: '16px 50px',
       }}
     >
-      {/* Можно добавить содержимое футера здесь */}
     </AntFooter>
   );
 };

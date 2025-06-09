@@ -11,24 +11,38 @@ const { Title, Text } = Typography;
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [form] = Form.useForm();
   const router = useRouter();
 
   async function handleSubmit(values: { identifier: string; password: string }) {
     setLoading(true);
+    setError(null);
 
-    const res = await fetch('http://localhost:5000/authorization/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(values)
-    });
+    try {
+      const res = await fetch('http://localhost:5000/authorization/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values)
+      });
 
-    const user = await res.json();
+      const data = await res.json();
+      console.log(data);
 
-    if (user.accessToken) {
-      document.cookie = `accessToken=${user.accessToken}; path=/; max-age=3600`;
-      router.push('/user');
-    } else {
-      alert('Ошибка входа');
+      if (res.ok && data.accessToken) {
+        document.cookie = `accessToken=${data.accessToken}; path=/; max-age=3600`;
+        router.push('/user');
+      } else {
+        // Обработка ошибки от сервера
+        if (data.message === 'user is not active') {
+          setError('Аккаунт ожидает активации');
+        } else {
+          setError(data.message || 'Ошибка входа. Проверьте логин и пароль.');
+        }
+      }
+    } catch (error) {
+      // Обработка сетевой ошибки
+      setError('Ошибка сети. Попробуйте позже.');
     }
 
     setLoading(false);
@@ -40,6 +54,7 @@ export default function Home() {
         <Title level={2} className={styles.loginHeading}>Вход</Title>
 
         <Form
+          form={form}
           name="login"
           layout="vertical"
           onFinish={handleSubmit}
@@ -66,6 +81,12 @@ export default function Home() {
               Войти
             </Button>
           </Form.Item>
+
+          {error && (
+            <div style={{ marginTop: '-0.5em', marginBottom: '1em' }}>
+              <Text type="danger">{error}</Text>
+            </div>
+          )}
         </Form>
 
         <Text className={styles.loginSmallText}>или</Text>

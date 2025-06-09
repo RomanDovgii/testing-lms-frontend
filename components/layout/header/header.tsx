@@ -2,8 +2,9 @@
 import Cookies from 'js-cookie';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useEffect } from 'react';
-import { Menu, Layout, Typography, Dropdown, Button } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Menu, Layout, Typography, Dropdown, Button, Drawer } from 'antd';
+import { MenuOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
 import { setUser } from '@/lib/redux/slices/userSlicer';
 import { useAppDispatch } from '@/lib/hooks';
@@ -52,6 +53,18 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
     const pathname = usePathname();
 
     const storedUser = useSelector((state: RootState) => state.user);
+    const [drawerVisible, setDrawerVisible] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 1400);
+        };
+
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     if (!user) {
         user = storedUser.user;
@@ -63,7 +76,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
         }, [dispatch, storedUser, user]);
     }
 
-    let links;
+    let links: { name: string; link: string; }[];
     switch (user?.role) {
         case 'студент':
             links = Links.STUDENT;
@@ -84,23 +97,37 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
 
     const activeKey = links?.findIndex(link => link.link === pathname).toString();
 
-    const items = links?.map((link, index) => ({
+    const menuItems = links?.map((link, index) => ({
         key: index.toString(),
         label: (
             <Link href={link.link} style={{ color: 'white', fontWeight: 400 }}>
                 {link.name}
             </Link>
         ),
-        style: { marginLeft: index === 0 ? 0 : '1.25em', position: 'relative' }
     }));
 
-    const menu = (
+    const drawerMenu = (
+        <Menu
+            mode="vertical"
+            selectedKeys={[activeKey]}
+            items={links?.map((link, index) => ({
+                key: index.toString(),
+                label: (
+                    <Link href={link.link} onClick={() => setDrawerVisible(false)}>
+                        {link.name}
+                    </Link>
+                ),
+            }))}
+        />
+    );
+
+    const userMenu = (
         <Menu
             items={[
                 {
                     key: 'change-user',
                     label: (
-                        <Link href="/change-user" style={{ width: '100%', display: 'block', padding: '0.5em 1em' }}>
+                        <Link href="/change-user" style={{ display: 'block', padding: '0.5em 1em' }}>
                             Изменить пользователя
                         </Link>
                     ),
@@ -134,6 +161,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
                 minHeight: '4.375em',
                 display: 'flex',
                 justifyContent: 'center',
+                padding: '0 1em',
             }}
         >
             <div
@@ -145,15 +173,34 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
                     alignItems: 'center',
                 }}
             >
-                <Menu
-                    theme="dark"
-                    mode="horizontal"
-                    selectedKeys={[activeKey]}
-                    style={{ background: 'transparent', fontSize: 24, fontFamily: 'Inter' }}
-                    items={items}
-                />
+                {isMobile ? (
+                    <>
+                        <Button
+                            type="text"
+                            icon={<MenuOutlined style={{ color: 'white', fontSize: 24 }} />}
+                            onClick={() => setDrawerVisible(true)}
+                        />
+                        <Drawer
+                            title="Меню"
+                            placement="left"
+                            onClose={() => setDrawerVisible(false)}
+                            open={drawerVisible}
+                            bodyStyle={{ padding: 0 }}
+                        >
+                            {drawerMenu}
+                        </Drawer>
+                    </>
+                ) : (
+                    <Menu
+                        theme="dark"
+                        mode="horizontal"
+                        selectedKeys={[activeKey]}
+                        style={{ background: 'transparent', fontSize: 24, fontFamily: 'Inter' }}
+                        items={menuItems}
+                    />
+                )}
 
-                <Dropdown overlay={menu} placement="bottomRight" trigger={['click']}>
+                <Dropdown overlay={userMenu} placement="bottomRight" trigger={['click']}>
                     <Text
                         style={{
                             color: 'white',
