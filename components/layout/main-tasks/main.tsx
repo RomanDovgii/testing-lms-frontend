@@ -25,6 +25,9 @@ const MainTasks = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  console.log(localUser)
+  console.log(globalUser)
+
   const cookies = document.cookie.split("; ");
   const tokenCookie = cookies.find((row) => row.startsWith("accessToken="));
   const token = tokenCookie?.split("=")[1];
@@ -195,7 +198,8 @@ const MainTasks = () => {
                                     hour: "2-digit",
                                     minute: "2-digit",
                                   })}
-                                </Typography.Text>
+                                </Typography.Text> <br/>
+                                <Typography.Text strong>Хэш: {anomaly.commitHash}</Typography.Text>
                               </Descriptions.Item>
                             ))}
                           </Descriptions>

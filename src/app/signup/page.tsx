@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from "react";
-import { Form, Input, Button, Radio, Checkbox, Typography, Alert } from "antd";
+import { Form, Input, Button, Radio, Checkbox, Typography, Alert, Modal } from "antd";
 import { useRouter } from "next/navigation";
 
 const { Title, Paragraph } = Typography;
@@ -12,6 +12,8 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form] = Form.useForm();
+
+  const [isConsentModalVisible, setIsConsentModalVisible] = useState(false);
 
   const handleRoleChange = (e: any) => {
     setRole(e.target.value);
@@ -174,6 +176,18 @@ export default function Signup() {
     }
   };
 
+  const showConsentModal = () => {
+    setIsConsentModalVisible(true);
+  };
+
+  const handleConsentModalOk = () => {
+    setIsConsentModalVisible(false);
+  };
+
+  const handleConsentModalCancel = () => {
+    setIsConsentModalVisible(false);
+  };
+
   return (
     <main style={{ maxWidth: 900, margin: '0 auto', padding: '2em' }}>
       <Title level={2} style={{ textAlign: 'center' }}>Регистрация</Title>
@@ -221,7 +235,17 @@ export default function Signup() {
             <Input placeholder="test@gmail.com" />
           </Form.Item>
 
-          <Form.Item name="agreement" valuePropName="checked" rules={[{ validator: (_, value) => value ? Promise.resolve() : Promise.reject('Необходимо согласие на обработку данных') }]}>
+          <Form.Item>
+            <Button type="link" onClick={showConsentModal} style={{ paddingLeft: 0 }}>
+              Посмотреть согласие
+            </Button>
+          </Form.Item>
+
+          <Form.Item
+            name="agreement"
+            valuePropName="checked"
+            rules={[{ validator: (_, value) => value ? Promise.resolve() : Promise.reject('Необходимо согласие на обработку данных') }]}
+          >
             <Checkbox>Согласие на обработку данных</Checkbox>
           </Form.Item>
 
@@ -271,7 +295,17 @@ export default function Signup() {
               <Input placeholder="test@gmail.com" />
             </Form.Item>
 
-            <Form.Item name="agreement" valuePropName="checked" rules={[{ validator: (_, value) => value ? Promise.resolve() : Promise.reject('Необходимо согласие на обработку данных') }]}>
+            <Form.Item>
+              <Button type="link" onClick={showConsentModal} style={{ paddingLeft: 0 }}>
+                Посмотреть согласие
+              </Button>
+            </Form.Item>
+
+            <Form.Item
+              name="agreement"
+              valuePropName="checked"
+              rules={[{ validator: (_, value) => value ? Promise.resolve() : Promise.reject('Необходимо согласие на обработку данных') }]}
+            >
               <Checkbox>Согласие на обработку данных</Checkbox>
             </Form.Item>
 
@@ -283,6 +317,22 @@ export default function Signup() {
           </Form>
         </>
       )}
+
+      <Modal
+        title="Согласие на обработку персональных данных"
+        visible={isConsentModalVisible}
+        onOk={handleConsentModalOk}
+        onCancel={handleConsentModalCancel}
+        okText="Закрыть"
+        cancelButtonProps={{ style: { display: 'none' } }}
+      >
+        <p>
+          Настоящим я даю согласие на обработку моих персональных данных в соответствии с Федеральным законом №152-ФЗ "О персональных данных". Персональные данные будут использоваться исключительно для целей регистрации, идентификации и предоставления доступа к сервису.
+        </p>
+        <p>
+          Я понимаю, что могу в любой момент отозвать свое согласие, обратившись к администратору сервиса.
+        </p>
+      </Modal>
     </main>
   );
 }

@@ -1,19 +1,31 @@
 'use client'
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Form, Input, Button, Typography, Space } from "antd";
 import Link from "next/link";
 import 'antd/dist/reset.css';
 import styles from "./page.module.css";
+import { logout } from "@/lib/redux/slices/userSlicer";
+import Cookies from 'js-cookie';
+import { persistor } from "@/lib/redux/store";
+import { useAppDispatch } from "@/lib/hooks";
 
 const { Title, Text } = Typography;
 
 export default function Home() {
+  const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form] = Form.useForm();
   const router = useRouter();
+
+  useEffect(() => {
+      dispatch(logout());
+      Cookies.remove('accessToken');
+      localStorage.clear();
+      persistor.purge();
+    }, [])
 
   async function handleSubmit(values: { identifier: string; password: string }) {
     setLoading(true);
@@ -100,3 +112,7 @@ export default function Home() {
     </main>
   );
 }
+function dispatch(arg0: any) {
+  throw new Error("Function not implemented.");
+}
+

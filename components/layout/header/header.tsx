@@ -6,9 +6,9 @@ import React, { useEffect, useState } from 'react';
 import { Menu, Layout, Typography, Dropdown, Button, Drawer } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
 import { useSelector } from 'react-redux';
-import { setUser } from '@/lib/redux/slices/userSlicer';
+import { logout, setUser } from '@/lib/redux/slices/userSlicer';
 import { useAppDispatch } from '@/lib/hooks';
-import { RootState } from '@/lib/redux/store';
+import { persistor, RootState } from '@/lib/redux/store';
 
 const { Header: AntHeader } = Layout;
 const { Text } = Typography;
@@ -139,9 +139,10 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
                             type="text"
                             danger
                             onClick={() => {
-                                dispatch(setUser(null));
+                                dispatch(logout());
                                 Cookies.remove('accessToken');
                                 localStorage.clear();
+                                persistor.purge();
                                 router.push('/');
                             }}
                             style={{ width: '100%', textAlign: 'left' }}

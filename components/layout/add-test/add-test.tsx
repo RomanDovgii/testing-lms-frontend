@@ -10,11 +10,14 @@ import {
   Button,
   Select,
   message,
+  Modal,
+  Typography,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
 
 const { TextArea } = Input;
+const { Paragraph, Title } = Typography;
 
 type TaskOption = {
   value: number;
@@ -44,6 +47,8 @@ export default function UploadTestForm() {
   const token = tokenCookie?.split("=")[1];
 
   const [localUser, setLocalUser] = useState<User | null>(null);
+
+  const [isSampleModalVisible, setIsSampleModalVisible] = useState(false);
 
   useEffect(() => {
     if (globalUser?.user?.id) {
@@ -130,56 +135,128 @@ export default function UploadTestForm() {
     }
   };
 
+  const showSampleModal = () => {
+    setIsSampleModalVisible(true);
+  };
+
+  const handleSampleModalOk = () => {
+    setIsSampleModalVisible(false);
+  };
+
+  const handleSampleModalCancel = () => {
+    setIsSampleModalVisible(false);
+  };
+
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      onFinish={handleSubmit}
-      style={{ maxWidth: 500, margin: "auto" }}
-    >
-      <Form.Item
-        name="file"
-        label="Файл теста"
-        rules={[{ required: true, message: "Пожалуйста, выберите файл" }]}
+    <>
+      <Button
+        type="default"
+        style={{ marginBottom: 24, display: "block", marginLeft: "auto", marginRight: "auto" }}
+        onClick={showSampleModal}
       >
-        <Upload
-          beforeUpload={(file) => {
-            setFileList([file]);
-            return false;
-          }}
-          fileList={fileList}
-          onRemove={() => setFileList([])}
+        Посмотреть образец
+      </Button>
+
+      <Modal
+        title="Образец кода"
+        visible={isSampleModalVisible}
+        onOk={handleSampleModalOk}
+        onCancel={handleSampleModalCancel}
+        okText="Закрыть"
+        cancelButtonProps={{ style: { display: "none" } }}
+        width={800}
+      >
+        <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
+{`
+[{
+        "filename": "index.js",
+        "functions": [{
+                "name": "addNumbers",
+                "inputs": [
+                    ["1", "3"], ["2", "3"]
+                ],
+                "outputs": [
+                    "4", "5"
+                ]
+            },
+            {
+                "name": "addOne",
+                "inputs": [
+                    "1", "3"
+                ],
+                "outputs": [
+                    "2", "4"
+                ]
+            }
+        ]
+    },
+    {
+        "filename": "index.html",
+        "requiredTags": [{
+                "tag": "h1",
+                "quantity": 1
+            },
+            {
+                "tag": "h2",
+                "quantity": 10
+            }
+        ]
+    }
+]
+`}
+        </pre>
+      </Modal>
+
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+        style={{ maxWidth: 500, margin: "auto" }}
+      >
+        <Form.Item
+          name="file"
+          label="Файл теста"
+          rules={[{ required: true, message: "Пожалуйста, выберите файл" }]}
         >
-          <Button icon={<UploadOutlined />}>Выбрать файл</Button>
-        </Upload>
-      </Form.Item>
+          <Upload
+            beforeUpload={(file) => {
+              setFileList([file]);
+              return false;
+            }}
+            fileList={fileList}
+            onRemove={() => setFileList([])}
+          >
+            <Button icon={<UploadOutlined />}>Выбрать файл</Button>
+          </Upload>
+        </Form.Item>
 
-      <Form.Item
-        name="title"
-        label="Название"
-        rules={[{ required: true, message: "Введите название теста" }]}
-      >
-        <Input placeholder="Введите название теста" />
-      </Form.Item>
+        <Form.Item
+          name="title"
+          label="Название"
+          rules={[{ required: true, message: "Введите название теста" }]}
+        >
+          <Input placeholder="Введите название теста" />
+        </Form.Item>
 
-      <Form.Item name="description" label="Описание">
-        <TextArea placeholder="Введите описание" rows={3} />
-      </Form.Item>
+        <Form.Item name="description" label="Описание">
+          <TextArea placeholder="Введите описание" rows={3} />
+        </Form.Item>
 
-      <Form.Item name="taskIds" label="Задания">
-        <Select
-          mode="multiple"
-          options={taskOptions}
-          placeholder="Выберите задания"
-          onChange={(value) => setSelectedTasks(value)}
-        />
-      </Form.Item>
+        <Form.Item name="taskIds" label="Задания">
+          <Select
+            mode="multiple"
+            options={taskOptions}
+            placeholder="Выберите задания"
+            onChange={(value) => setSelectedTasks(value)}
+          />
+        </Form.Item>
 
-      <Form.Item>
-        <Button type="primary" htmlType="submit">
-          Загрузить тест
-        </Button>
-      </Form.Item>
-    </Form>
+        <Form.Item>
+          <Button type="primary" htmlType="submit">
+            Загрузить тест
+          </Button>
+        </Form.Item>
+      </Form>
+    </>
   );
 }

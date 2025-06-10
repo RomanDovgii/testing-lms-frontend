@@ -72,8 +72,6 @@ const Anomalies = () => {
       return;
     }
 
-    console.log(user.role)
-
     if (user.role === 'студент') {
       const filtered = anomalies.filter(a => a.githubLogin === user.github);
       setFilteredAnomalies(filtered);
@@ -93,6 +91,8 @@ const Anomalies = () => {
     );
   }
 
+  console.log(filteredAnomalies)
+
   return (
     <div>
       <Title level={2}>Аномалии:</Title>
@@ -106,11 +106,12 @@ const Anomalies = () => {
               padding: '5px 10px',
               borderBottom: '1px solid #f0f0f0',
             }}
-            key={`${item.id}-${item.githubLogin}`}
+            key={`${item.commitHash}`}
           >
             <Title level={4} style={{ marginBottom: 0 }}>
               Имя пользователя: {item.githubLogin}
             </Title>
+            <Text>Хэш коммита: {item.commitHash}</Text><br/>
             <Text>Дата: {formatDate(item.commitDate)}</Text><br />
             <Text>Задание: {item.task.name}</Text>
           </List.Item>
