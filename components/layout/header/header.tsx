@@ -212,7 +212,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
                         theme="dark"
                         mode="horizontal"
                         selectedKeys={[activeKey]}
-                        style={{ background: 'transparent', fontSize: 24, fontFamily: 'Inter' }}
+                        style={{ background: 'transparent', fontSize: 24, fontFamily: 'Inter', minWidth: '20em' }}
                         items={menuItems}
                     />
                 )}
