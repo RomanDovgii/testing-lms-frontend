@@ -17,7 +17,7 @@
 'use client';
 
 import { useSelector } from "react-redux";
-import { List, Typography, Spin, Alert, Checkbox, Collapse, Descriptions, Table } from "antd";
+import { List, Typography, Spin, Alert, Checkbox, Collapse, Descriptions, Table, Button, Modal, message, Form, Input } from "antd";
 import styles from "./main.module.css";
 import { useEffect, useState } from "react";
 import { RootState } from '@/lib/redux/store';
@@ -41,9 +41,9 @@ const MainTasks = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  console.log(localUser)
-  console.log(globalUser)
-
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
   const cookies = document.cookie.split("; ");
   const tokenCookie = cookies.find((row) => row.startsWith("accessToken="));
   const token = tokenCookie?.split("=")[1];
@@ -94,6 +94,61 @@ const MainTasks = () => {
 
     fetchData();
   }, [localUser, token]);
+
+  const showEditModal = (task) => {
+    setSelectedTask(task);
+    setIsEditModalVisible(true);
+  };
+
+  const showDeleteModal = (task) => {
+    setSelectedTask(task);
+    setIsDeleteModalVisible(true);
+  };
+
+  const handleEditSubmit = async (values: { name: string; link: string; branch: string }) => {
+    if (!localUser) {
+      message.error('Пользователь не авторизован');
+      return;
+    }
+
+    try {
+      await updateTask({
+        id: selectedTask.id,
+        userId: localUser.id,
+        name: values.name,
+        link: values.link,
+        branch: values.branch,
+      });
+
+      setIsEditModalVisible(false);
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === selectedTask.id ? {...task, ...values} : task
+        )
+      );
+      message.success('Задание обновлено');
+    } catch (error) {
+      console.error('Ошибка при обновлении задания:', error);
+      message.error('Не удалось обновить задание');
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!localUser) {
+      message.error('Пользователь не авторизован');
+      return;
+    }
+
+    try {
+      await deleteTask(selectedTask.id, localUser.id);
+      setIsDeleteModalVisible(false);
+      message.success('Задание удалено');
+      setTasks(prevTasks => prevTasks.filter(task => task.id !== selectedTask.id));
+    } catch (error) {
+      console.error('Ошибка при удалении задания:', error);
+      message.error('Не удалось удалить задание');
+    }
+  };
 
   async function handleCheck(id: number) {
     if (!token) {
@@ -149,6 +204,58 @@ const MainTasks = () => {
     }
   }
 
+  const updateTask = async (taskData) => {
+    const cookies = document.cookie.split('; ');
+    const tokenCookie = cookies.find((row) => row.startsWith('accessToken='));
+    const token = tokenCookie?.split('=')[1];
+
+    try {
+      const res = await fetch('http://localhost:5000/user/task/update', {
+        method: 'POST', // Или PATCH, если сервер принимает PATCH
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(taskData),
+      });
+
+      if (!res.ok) {
+        throw new Error('Не удалось обновить задание');
+      }
+
+      return await res.json();
+    } catch (error) {
+      console.error('Ошибка при обновлении задания:', error);
+      throw error;
+    }
+  };
+
+  const deleteTask = async (taskId, userId) => {
+    const cookies = document.cookie.split('; ');
+    const tokenCookie = cookies.find((row) => row.startsWith('accessToken='));
+    const token = tokenCookie?.split('=')[1];
+
+    try {
+      const res = await fetch('http://localhost:5000/user/task/delete', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ taskId, userId }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Не удалось удалить задание');
+      }
+
+      return await res.json();
+    } catch (error) {
+      console.error('Ошибка при удалении задания:', error);
+      throw error;
+    }
+  };
+
   if (loading) return <Spin tip="Загрузка..." style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }} />;
   if (error) return <Alert type="error" message="Ошибка" description={error} style={{ margin: '2rem' }} />;
 
@@ -198,6 +305,13 @@ const MainTasks = () => {
                       Добавить в очередь на проверку копирования
                     </Checkbox>
 
+                    <Button type="primary" onClick={() => showEditModal(item)} style={{ marginRight: 8 }}>
+                      Изменить
+                    </Button>
+                    <Button danger onClick={() => showDeleteModal(item)}>
+                      Удалить
+                    </Button>
+
                     <Collapse ghost style={{ marginTop: "1rem" }}>
                       <Panel header={`Аномалии (${item.anomalies?.length || 0})`} key="1" style={{ backgroundColor: "#fafafa", borderRadius: 6 }}>
                         {(item.anomalies && item.anomalies.length > 0) ? (
@@ -214,7 +328,7 @@ const MainTasks = () => {
                                     hour: "2-digit",
                                     minute: "2-digit",
                                   })}
-                                </Typography.Text> <br/>
+                                </Typography.Text> <br />
                                 <Typography.Text strong>Хэш: {anomaly.commitHash}</Typography.Text>
                               </Descriptions.Item>
                             ))}
@@ -272,6 +386,68 @@ const MainTasks = () => {
             </List.Item>
           )}
         />
+        <Modal
+          title="Редактировать задание"
+          open={isEditModalVisible}
+          onCancel={() => setIsEditModalVisible(false)}
+          footer={null}
+          destroyOnHidden
+        >
+          <Form
+            layout="vertical"
+            initialValues={{
+              name: selectedTask?.name,
+              link: selectedTask?.link,
+              branch: selectedTask?.branch,
+            }}
+            onFinish={handleEditSubmit}
+            key={selectedTask?.id}
+          >
+            <Form.Item
+              label="Название"
+              name="name"
+              rules={[{ required: true, message: 'Введите название задания' }]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              label="Ссылка"
+              name="link"
+              rules={[{ required: true, message: 'Введите ссылку' }]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              label="Ветка"
+              name="branch"
+              rules={[{ required: true, message: 'Введите ветку' }]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item style={{ textAlign: 'right' }}>
+              <Button onClick={() => setIsEditModalVisible(false)} style={{ marginRight: 8 }}>
+                Отмена
+              </Button>
+              <Button type="primary" htmlType="submit" loading={loading}>
+                Сохранить
+              </Button>
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        <Modal
+          title="Удалить задание"
+          open={isDeleteModalVisible}
+          onOk={handleDeleteConfirm}
+          onCancel={() => setIsDeleteModalVisible(false)}
+          okText="Удалить"
+          okButtonProps={{ danger: true }}
+        >
+          <p>Вы уверены, что хотите удалить это задание?</p>
+        </Modal>
       </div>
     </main>
   );

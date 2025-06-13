@@ -17,7 +17,7 @@
 'use client';
 
 import { useSelector } from "react-redux";
-import { Button, Select, Typography, Alert, List, Modal, Collapse, Descriptions } from "antd";
+import { Button, Select, Typography, Alert, List, Modal, Collapse, Descriptions, Form, Input, message } from "antd";
 import styles from "./main.module.css";
 import { useEffect, useState } from "react";
 import { RootState } from '@/lib/redux/store';
@@ -109,6 +109,9 @@ const MainTests = () => {
     const [isValidationModalVisible, setIsValidationModalVisible] = useState(false);
     const [isRunTestModalVisible, setIsRunTestModalVisible] = useState(false);
     const [runTestResults, setRunTestResults] = useState<TestResult[]>([]);
+    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+    const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+    const [selectedTest, setSelectedTest] = useState(null);
 
     useEffect(() => {
         if (globalUser && globalUser.user?.id) {
@@ -187,6 +190,101 @@ const MainTests = () => {
         fetchData();
     }, [localUser, token]);
 
+    const openEditModal = (test) => {
+        setSelectedTest(test);
+        setIsEditModalVisible(true);
+    };
+
+    const openDeleteModal = (test) => {
+        setSelectedTest(test);
+        setIsDeleteModalVisible(true);
+    };
+
+    async function updateTest(data: {
+        testId: number;
+        userId: number;
+        title?: string;
+        description?: string;
+    }) {
+        const response = await fetch('http://localhost:5000/user/test/update', {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`, // если нужен токен
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update test');
+        }
+
+        return await response.json();
+    }
+
+    async function deleteTest(data: { testId: number; userId: number }) {
+        const response = await fetch('http://localhost:5000/user/test/delete', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`, // если нужен токен
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to delete test');
+        }
+
+        return await response.json();
+    }
+
+    const handleEditSubmit = async (values) => {
+        setLoading(true);
+        try {
+            await updateTest({
+                testId: selectedTest.id,
+                userId: localUser?.id,
+                ...values,
+            });
+
+            setTests(prev =>
+                prev.map(t => (t.id === selectedTest.id ? { ...t, ...values } : t))
+            );
+
+            message.success('Тест успешно обновлён');
+            setIsEditModalVisible(false);
+
+            message.success('Тест успешно обновлён');
+            setIsEditModalVisible(false);
+        } catch (error) {
+            console.error(error);
+            message.error('Не удалось обновить тест. Попробуйте ещё раз.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDeleteConfirm = async () => {
+        setLoading(true);
+        try {
+            await deleteTest({
+                testId: selectedTest.id,
+                userId: localUser?.id,
+            });
+
+            setTests(prev => prev.filter(t => t.id !== selectedTest.id));
+
+            message.success('Тест успешно удалён');
+            setIsDeleteModalVisible(false);
+        } catch (error) {
+            console.error(error);
+            message.error('Не удалось удалить тест. Попробуйте ещё раз.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         if (!selectedStudent || !selectedTask) {
@@ -256,39 +354,39 @@ const MainTests = () => {
     }
 
     async function handleStudentRunTest(taskId: number) {
-    setRunTestResults([]);
-    if (!token) {
-        setError("Токен не найден");
-        return;
+        setRunTestResults([]);
+        if (!token) {
+            setError("Токен не найден");
+            return;
+        }
+        if (!localUser?.github) {
+            setError("GitHub логин пользователя не найден");
+            return;
+        }
+
+        setRunTestLoadingId(taskId);
+        setError(null);
+
+        try {
+            const res = await fetch(`http://localhost:5000/testing/student-run/${taskId}/${localUser.github}`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            if (!res.ok) throw new Error("Ошибка при запуске теста");
+
+            const testData = await res.json();
+            setRunTestResults(testData);
+            setIsRunTestModalVisible(true);
+        } catch (err: any) {
+            setError(err.message || "Неизвестная ошибка при запуске теста");
+        } finally {
+            setRunTestLoadingId(null);
+        }
     }
-    if (!localUser?.github) {
-        setError("GitHub логин пользователя не найден");
-        return;
-    }
-
-    setRunTestLoadingId(taskId);
-    setError(null);
-
-    try {
-        const res = await fetch(`http://localhost:5000/testing/student-run/${taskId}/${localUser.github}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-            },
-        });
-
-        if (!res.ok) throw new Error("Ошибка при запуске теста");
-
-        const testData = await res.json();
-        setRunTestResults(testData);
-        setIsRunTestModalVisible(true);
-    } catch (err: any) {
-        setError(err.message || "Неизвестная ошибка при запуске теста");
-    } finally {
-        setRunTestLoadingId(null);
-    }
-}
 
     const handleValidationModalClose = () => setIsValidationModalVisible(false);
     const handleRunTestModalClose = () => setIsRunTestModalVisible(false);
@@ -370,8 +468,22 @@ const MainTests = () => {
                                         onClick={() => handleRunTest(item.id)}
                                         loading={runTestLoadingId === item.id}
                                         disabled={validationLoading || runTestLoadingId !== null}
+                                        style={{ marginRight: '1em' }}
                                     >
                                         Запустить
+                                    </Button>
+                                    <Button
+                                        type="primary"
+                                        onClick={() => openEditModal(item)}
+                                        style={{ marginRight: '1em' }}
+                                    >
+                                        Изменить
+                                    </Button>
+                                    <Button
+                                        danger
+                                        onClick={() => openDeleteModal(item)}
+                                    >
+                                        Удалить
                                     </Button>
                                 </div>
                             </List.Item>
@@ -474,7 +586,6 @@ const MainTests = () => {
                                                     <Paragraph type="warning">{file.message || "Файл не найден"}</Paragraph>
                                                 ) : file.details ? (
                                                     <>
-                                                        {/* Обработка функций */}
                                                         {Array.isArray(file.details?.functions) && file.details.functions.length > 0 ? (
                                                             <Collapse>
                                                                 {file.details.functions.map((func: any, idx: number) => (
@@ -525,7 +636,6 @@ const MainTests = () => {
                                                             <Paragraph>Нет данных по функциям</Paragraph>
                                                         )}
 
-                                                        {/* Обработка тегов */}
                                                         {Array.isArray(file.details.tags) && (
                                                             <List
                                                                 header="Результаты по тегам:"
@@ -558,7 +668,62 @@ const MainTests = () => {
                             <Paragraph>Нет данных</Paragraph>
                         )}
                     </Modal>
+                    {/* Модалка редактирования теста */}
+                    <Modal
+                        title="Редактировать тест"
+                        open={isEditModalVisible}
+                        onCancel={() => setIsEditModalVisible(false)}
+                        footer={null}
+                        destroyOnHidden
+                    >
+                        <Form
+                            layout="vertical"
+                            initialValues={{
+                                title: selectedTest?.title,
+                                description: selectedTest?.description,
+                            }}
+                            onFinish={handleEditSubmit}
+                            key={selectedTest?.id}
+                        >
+                            <Form.Item
+                                label="Название"
+                                name="title"
+                                rules={[{ required: true, message: 'Введите название теста' }]}
+                            >
+                                <Input />
+                            </Form.Item>
 
+                            <Form.Item
+                                label="Описание"
+                                name="description"
+                                rules={[{ required: true, message: 'Введите описание теста' }]}
+                            >
+                                <Input.TextArea rows={4} />
+                            </Form.Item>
+
+                            <Form.Item style={{ textAlign: 'right' }}>
+                                <Button onClick={() => setIsEditModalVisible(false)} style={{ marginRight: 8 }}>
+                                    Отмена
+                                </Button>
+                                <Button type="primary" htmlType="submit" loading={loading}>
+                                    Сохранить
+                                </Button>
+                            </Form.Item>
+                        </Form>
+                    </Modal>
+
+                    {/* Модалка подтверждения удаления */}
+                    <Modal
+                        title="Удалить тест"
+                        open={isDeleteModalVisible}
+                        onOk={handleDeleteConfirm}
+                        onCancel={() => setIsDeleteModalVisible(false)}
+                        okText="Удалить"
+                        okButtonProps={{ danger: true, loading }}
+                        cancelText="Отмена"
+                    >
+                        <p>Вы уверены, что хотите удалить тест <strong>{selectedTest?.title}</strong>?</p>
+                    </Modal>
                 </div>
             </main>
         );
@@ -727,7 +892,6 @@ const MainTests = () => {
                                                     <Paragraph type="warning">{file.message || "Файл не найден"}</Paragraph>
                                                 ) : file.details ? (
                                                     <>
-                                                        {/* Обработка функций */}
                                                         {Array.isArray(file.details?.functions) && file.details.functions.length > 0 ? (
                                                             <Collapse>
                                                                 {file.details.functions.map((func: any, idx: number) => (
