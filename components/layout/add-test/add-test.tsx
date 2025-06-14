@@ -31,9 +31,12 @@ import {
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useRouter } from "next/navigation";
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import { CopyOutlined } from '@ant-design/icons';
 
 const { TextArea } = Input;
-const { Paragraph, Title } = Typography;
+const { Paragraph, Title, Text } = Typography;
 
 type TaskOption = {
   value: number;
@@ -163,6 +166,49 @@ export default function UploadTestForm() {
     setIsSampleModalVisible(false);
   };
 
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(jsonContent);
+      message.success('Скопировано!');
+    } catch (err) {
+      message.error('Ошибка при копировании');
+    }
+  };
+
+  const jsonContent = `[
+  {
+    "filename": "index.js",
+    "functions": [
+      {
+        "name": "addNumbers",
+        "inputs": [
+          ["1", "3"],
+          ["2", "3"]
+        ],
+        "outputs": ["4", "5"]
+      },
+      {
+        "name": "addOne",
+        "inputs": ["1", "3"],
+        "outputs": ["2", "4"]
+      }
+    ]
+  },
+  {
+    "filename": "index.html",
+    "requiredTags": [
+      {
+        "tag": "h1",
+        "quantity": 1
+      },
+      {
+        "tag": "h2",
+        "quantity": 10
+      }
+    ]
+  }
+]`;
+
   return (
     <>
       <Button
@@ -182,45 +228,20 @@ export default function UploadTestForm() {
         cancelButtonProps={{ style: { display: "none" } }}
         width={800}
       >
-        <pre style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
-{`
-[{
-        "filename": "index.js",
-        "functions": [{
-                "name": "addNumbers",
-                "inputs": [
-                    ["1", "3"], ["2", "3"]
-                ],
-                "outputs": [
-                    "4", "5"
-                ]
-            },
-            {
-                "name": "addOne",
-                "inputs": [
-                    "1", "3"
-                ],
-                "outputs": [
-                    "2", "4"
-                ]
-            }
-        ]
-    },
-    {
-        "filename": "index.html",
-        "requiredTags": [{
-                "tag": "h1",
-                "quantity": 1
-            },
-            {
-                "tag": "h2",
-                "quantity": 10
-            }
-        ]
-    }
-]
-`}
-        </pre>
+        <div style={{ position: 'relative' }}>
+          <Button
+            icon={<CopyOutlined />}
+            size="small"
+            onClick={handleCopy}
+            style={{ position: 'absolute', right: 10, top: 10, zIndex: 1 }}
+          >
+            Копировать
+          </Button>
+
+          <SyntaxHighlighter language="json" style={oneDark} wrapLongLines>
+            {jsonContent}
+          </SyntaxHighlighter>
+        </div>
       </Modal>
 
       <Form
